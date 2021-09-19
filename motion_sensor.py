@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import time
 from datetime import datetime
 import boto3
+import botocore
 
 GPIO.setmode(GPIO.BCM)
 pir_pin = 7
@@ -19,20 +20,22 @@ class AWSDb:
         timestamp = int(time.time())
         dateandtime = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         location = "Adrian_Office"
-
         data_entry = {"Timestamp": timestamp, "Date_Time": dateandtime, "Location": location, "Motion": 1, "Sensor_id": "AO_"+str(timestamp)}
-        self.table.put_item(Item=data_entry)
+        
+        try:
+            self.table.put_item(Item=data_entry)
+        except botocore.exceptions.EndpointConnectionError:
+            time.sleep(30)
 
 
 if __name__ == "__main__":
+	# Initialise the database object
+	obj = AWSDb()
+	GPIO.add_event_detect(pir_pin, GPIO.BOTH, callback=obj.motion_detection, bouncetime=10000)  # Frequency 10 sec
 
-    # Initialise the database object
-    obj = AWSDb()
-    GPIO.add_event_detect(pir_pin, GPIO.BOTH, callback=obj.motion_detection, bouncetime=10000)  # Frequency 10 sec
-
-    # To make the run active
-    try:
-        while 1:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        GPIO.cleanup()
+	# To make the run active
+	try:
+		while 1:
+			time.sleep(1)
+	except KeyboardInterrupt:
+		GPIO.cleanup()
