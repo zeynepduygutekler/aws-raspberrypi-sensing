@@ -5,8 +5,8 @@ import boto3
 import botocore
 
 GPIO.setmode(GPIO.BCM)
-pir_pin = 7
-GPIO.setup(pir_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+PIR_PIN = 7
+GPIO.setup(PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 
 class AWSDb:
@@ -16,7 +16,7 @@ class AWSDb:
         self.table = self.db.Table(table_name)
         self.client = boto3.client('dynamodb')
 
-    def motion_detection(self, pir_pin):
+    def motion_detection(self, PIR_PIN):
         timestamp = int(time.time())
         dateandtime = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         location = "Adrian_Office"
@@ -31,7 +31,7 @@ class AWSDb:
 if __name__ == "__main__":
 	# Initialise the database object
 	obj = AWSDb()
-	GPIO.add_event_detect(pir_pin, GPIO.BOTH, callback=obj.motion_detection, bouncetime=10000)  # Frequency 10 sec
+	GPIO.add_event_detect(PIR_PIN, GPIO.BOTH, callback=obj.motion_detection, bouncetime=10000)  # Frequency 10 sec
 
 	# To make the run active
 	try:
